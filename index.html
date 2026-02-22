@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RizzLang — AI語学パートナーと毎日会話して言語を身につける</title>
+  <meta name="description" content="AI韓国人・外国人パートナーとのリアルなLINEを通じて、自然な言語表現が身につく学習アプリ。BETAテスター募集中。">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --pink: #FF6B9D;
+      --pink-dark: #c44b8a;
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --muted: #888;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Gradient orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #FF6B9D; top: -200px; right: -200px; }
+    .orb-2 { width: 400px; height: 400px; background: #7B61FF; bottom: -100px; left: -100px; }
+
+    /* Nav */
+    nav {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--pink), #FF8E53);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 100px 24px 60px;
+      position: relative;
+      z-index: 10;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .lang-flags {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .flag-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flag-pill.active {
+      border-color: var(--pink);
+      background: rgba(255, 107, 157, 0.1);
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    h1 .highlight {
+      background: linear-gradient(135deg, var(--pink), #FF8E53);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Waitlist form */
+    .waitlist-form {
+      display: flex;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .email-input {
+      flex: 1;
+      min-width: 240px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .email-input:focus { border-color: var(--pink); }
+    .email-input::placeholder { color: var(--muted); }
+
+    .cta-btn {
+      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .form-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Mock preview */
+    .preview-section {
+      max-width: 400px;
+      margin: 80px auto 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .preview-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .chat-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(255,107,157,0.1);
+    }
+
+    .preview-header {
+      background: #1e1e1e;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .preview-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), #FF8E53);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .preview-name { font-size: 14px; font-weight: 700; }
+    .preview-status { font-size: 11px; color: #4CAF50; }
+
+    .preview-messages {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preview-msg-in {
+      background: #242424;
+      border-radius: 16px 16px 16px 4px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 85%;
+      color: var(--text);
+    }
+
+    .preview-msg-out {
+      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 85%;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .preview-panel {
+      background: #1a1a1a;
+      border-top: 1px solid var(--border);
+      padding: 14px;
+    }
+
+    .preview-result-label {
+      font-size: 10px;
+      color: var(--pink);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .preview-result {
+      background: #242424;
+      border: 1px solid #FF6B9D33;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .preview-hints {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .preview-hint {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .preview-hint-badge {
+      background: rgba(255,107,157,0.15);
+      color: var(--pink);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Features */
+    .features {
+      max-width: 900px;
+      margin: 100px auto 0;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 800;
+      margin-bottom: 60px;
+      line-height: 1.3;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-card:hover { border-color: var(--pink); }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Languages */
+    .languages {
+      max-width: 720px;
+      margin: 100px auto 0;
+      padding: 0 24px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .lang-grid {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .lang-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 100px;
+    }
+
+    .lang-flag { font-size: 32px; }
+    .lang-name { font-size: 13px; font-weight: 600; }
+
+    .lang-card.coming {
+      opacity: 0.4;
+    }
+
+    .lang-status {
+      font-size: 10px;
+      color: var(--pink);
+      font-weight: 700;
+    }
+
+    .lang-status.soon { color: var(--muted); }
+
+    /* Footer CTA */
+    .footer-cta {
+      text-align: center;
+      padding: 100px 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-cta h2 {
+      font-size: clamp(24px, 3vw, 40px);
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .footer-cta p {
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Success state */
+    .success-msg {
+      display: none;
+      background: rgba(255,107,157,0.1);
+      border: 1px solid rgba(255,107,157,0.3);
+      border-radius: 12px;
+      padding: 14px 24px;
+      color: var(--pink);
+      font-weight: 700;
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <div class="logo">✦ RizzLang</div>
+    <div class="nav-badge">🔒 BETA 限定公開中</div>
+  </nav>
+
+  <section class="hero">
+    <div class="lang-flags">
+      <div class="flag-pill active">🇰🇷 韓国語</div>
+      <div class="flag-pill active">🇺🇸 英語</div>
+      <div class="flag-pill">🇨🇳 中国語</div>
+      <div class="flag-pill">🇫🇷 フランス語</div>
+    </div>
+
+    <h1>
+      AI外国人パートナーと<br>
+      <span class="highlight">毎日LINEして</span><br>
+      言語を身につける
+    </h1>
+
+    <p class="hero-sub">
+      テキストでも、ゲームでもない。<br>
+      感情が動く「リアルな会話」の文脈で、<br>
+      本当に使える言葉が身につく言語学習アプリ。
+    </p>
+
+    <div class="waitlist-form" id="waitlist-form">
+      <input type="email" class="email-input" placeholder="メールアドレスを入力" id="email-input">
+      <button class="cta-btn" onclick="submitWaitlist()">BETAに参加する →</button>
+    </div>
+
+    <div class="success-msg" id="success-msg">
+      ✓ 登録完了！BETAアクセス準備ができたらご連絡します 🎉
+    </div>
+
+    <p class="form-note">無料 · スパムなし · いつでも解除可能</p>
+  </section>
+
+  <!-- Chat Preview -->
+  <div class="preview-section">
+    <p class="preview-label">▼ こんな感じで学べます</p>
+    <div class="chat-preview">
+      <div class="preview-header">
+        <div class="preview-avatar">🌸</div>
+        <div>
+          <div class="preview-name">지우 (ジウ) 🇰🇷</div>
+          <div class="preview-status">● オンライン</div>
+        </div>
+      </div>
+      <div class="preview-messages">
+        <div class="preview-msg-in">
+          오빠, 오늘 뭐 했어? 🥺<br>나 보고 싶었어~
+        </div>
+        <div class="preview-msg-out">
+          일 했어 😊 나도 보고 싶었어~<br>빨리 보고 싶다
+        </div>
+      </div>
+      <div class="preview-panel">
+        <div class="preview-result-label">✦ あなたの返信（自動生成）</div>
+        <div class="preview-result">일 했어 😊 나도 보고 싶었어~ 빨리 보고 싶다</div>
+        <div class="preview-hints">
+          <div class="preview-hint">
+            <span class="preview-hint-badge">なぜ</span>
+            <span>나도 보고 싶었어 ← 「나도」は親密な相手への自然な形。저도は少しフォーマル。</span>
+          </div>
+          <div class="preview-hint">
+            <span class="preview-hint-badge">スラング</span>
+            <span>오빠 ← 年上男性への呼びかけ。恋愛文脈では特別に甘い響きを持つ。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features">
+    <p class="section-label">なぜ RizzLang なのか</p>
+    <h2 class="section-title">感情が動く文脈でしか<br>生まれない表現がある</h2>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title">毎日リアルなLINEが届く</div>
+        <div class="feature-desc">AIパートナーから毎朝メッセージが来る。日本語で返したいことを入力するだけで、自然な表現に変換してくれる。</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">なぜその表現か、わかる</div>
+        <div class="feature-desc">翻訳だけじゃない。「なぜその言い方が自然なのか」30文字以内で即解説。スラングも文化的ニュアンスも。</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">使うたびに語彙が蓄積する</div>
+        <div class="feature-desc">会話で出てきた表現は自動で語彙帳へ。SRS（間隔反復）で効率的に定着。週次レポートで成長が見える。</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <div class="feature-title">主要言語すべてに対応</div>
+        <div class="feature-desc">韓国語・英語・中国語・フランス語・スペイン語。それぞれの文化に根ざしたキャラクターとの会話で学ぶ。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Languages -->
+  <section class="languages">
+    <p class="section-label">対応言語</p>
+    <h2 class="section-title">世界中の「誰か」と<br>付き合ってみる</h2>
+    <div class="lang-grid">
+      <div class="lang-card">
+        <span class="lang-flag">🇰🇷</span>
+        <span class="lang-name">韓国語</span>
+        <span class="lang-status">BETAで利用可</span>
+      </div>
+      <div class="lang-card">
+        <span class="lang-flag">🇺🇸</span>
+        <span class="lang-name">英語</span>
+        <span class="lang-status">BETAで利用可</span>
+      </div>
+      <div class="lang-card coming">
+        <span class="lang-flag">🇨🇳</span>
+        <span class="lang-name">中国語</span>
+        <span class="lang-status soon">近日公開</span>
+      </div>
+      <div class="lang-card coming">
+        <span class="lang-flag">🇫🇷</span>
+        <span class="lang-name">フランス語</span>
+        <span class="lang-status soon">近日公開</span>
+      </div>
+      <div class="lang-card coming">
+        <span class="lang-flag">🇪🇸</span>
+        <span class="lang-name">スペイン語</span>
+        <span class="lang-status soon">近日公開</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="footer-cta">
+    <h2>最初の50人に<br>なりませんか</h2>
+    <p>プロダクトを一緒に作り上げるBETAテスターを募集中</p>
+    <div class="waitlist-form">
+      <input type="email" class="email-input" placeholder="メールアドレスを入力" id="email-input-2">
+      <button class="cta-btn" onclick="submitWaitlist2()">BETAに参加する →</button>
+    </div>
+    <div class="success-msg" id="success-msg-2">
+      ✓ 登録完了！BETAアクセス準備ができたらご連絡します 🎉
+    </div>
+    <p class="form-note" style="margin-top:12px">無料 · スパムなし</p>
+  </section>
+
+  <footer>
+    <p>© 2026 RizzLang · Made with ♥ in Tokyo</p>
+  </footer>
+
+  <script>
+    function submitWaitlist() {
+      const email = document.getElementById('email-input').value;
+      if (!email || !email.includes('@')) {
+        alert('有効なメールアドレスを入力してください');
+        return;
+      }
+      // TODO: Replace with actual form submission (Tally.so / Supabase)
+      document.getElementById('waitlist-form').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+      console.log('Waitlist signup:', email);
+    }
+
+    function submitWaitlist2() {
+      const email = document.getElementById('email-input-2').value;
+      if (!email || !email.includes('@')) {
+        alert('有効なメールアドレスを入力してください');
+        return;
+      }
+      document.querySelector('.footer-cta .waitlist-form').style.display = 'none';
+      document.getElementById('success-msg-2').style.display = 'block';
+      console.log('Waitlist signup:', email);
+    }
+  </script>
+</body>
+</html>
