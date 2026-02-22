@@ -479,11 +479,15 @@
     </p>
 
     <form class="waitlist-form" id="waitlist-form-1"
-          action="https://formspree.io/f/REPLACE_WITH_FORMSPREE_ID"
+          action="https://formsubmit.co/minewest065524@gmail.com"
           method="POST"
           onsubmit="handleSubmit(event, 'waitlist-form-1', 'success-msg-1')">
       <input type="email" name="email" class="email-input" placeholder="メールアドレスを入力" required>
+      <input type="hidden" name="_subject" value="🎉 新しいRizzLang BETAサインアップ">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
       <input type="hidden" name="source" value="hero-section">
+      <input type="hidden" name="_next" value="https://mine2424.github.io/rizzlang-landing/?thanks=1">
       <button type="submit" class="cta-btn">BETAに参加する →</button>
     </form>
 
@@ -597,11 +601,15 @@
     <h2>最初の50人に<br>なりませんか</h2>
     <p>プロダクトを一緒に作り上げるBETAテスターを募集中</p>
     <form class="waitlist-form" id="waitlist-form-2"
-          action="https://formspree.io/f/REPLACE_WITH_FORMSPREE_ID"
+          action="https://formsubmit.co/minewest065524@gmail.com"
           method="POST"
           onsubmit="handleSubmit(event, 'waitlist-form-2', 'success-msg-2')">
       <input type="email" name="email" class="email-input" placeholder="メールアドレスを入力" required>
+      <input type="hidden" name="_subject" value="🎉 新しいRizzLang BETAサインアップ">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
       <input type="hidden" name="source" value="footer-section">
+      <input type="hidden" name="_next" value="https://mine2424.github.io/rizzlang-landing/?thanks=1">
       <button type="submit" class="cta-btn">BETAに参加する →</button>
     </form>
     <div class="success-msg" id="success-msg-2">
@@ -615,13 +623,20 @@
   </footer>
 
   <script>
+    // FormSubmit.co AJAX endpoint
+    const FORM_ENDPOINT = 'https://formsubmit.co/ajax/minewest065524@gmail.com';
+
     async function handleSubmit(e, formId, successId) {
       e.preventDefault();
       const form = document.getElementById(formId);
+      const btn = form.querySelector('button[type="submit"]');
       const data = new FormData(form);
 
+      btn.textContent = '送信中...';
+      btn.disabled = true;
+
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch(FORM_ENDPOINT, {
           method: 'POST',
           body: data,
           headers: { 'Accept': 'application/json' }
@@ -629,13 +644,27 @@
 
         if (res.ok) {
           form.style.display = 'none';
-          document.getElementById(successId).style.display = 'block';
+          const msg = document.getElementById(successId);
+          msg.style.display = 'block';
+          // Track count (local only)
+          const count = parseInt(localStorage.getItem('rizzlang_signups') || '0') + 1;
+          localStorage.setItem('rizzlang_signups', count);
         } else {
+          btn.textContent = 'BETAに参加する →';
+          btn.disabled = false;
           alert('エラーが発生しました。もう一度お試しください。');
         }
       } catch {
+        btn.textContent = 'BETAに参加する →';
+        btn.disabled = false;
         alert('送信に失敗しました。ページを更新してもう一度お試しください。');
       }
+    }
+
+    // Show thank you banner if redirected back with ?thanks=1
+    if (new URLSearchParams(window.location.search).get('thanks') === '1') {
+      document.querySelectorAll('.waitlist-form').forEach(f => f.style.display = 'none');
+      document.querySelectorAll('.success-msg').forEach(m => m.style.display = 'block');
     }
   </script>
 </body>
